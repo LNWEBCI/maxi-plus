@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#144622"/>
+      <stop offset="100%" stop-color="#03300D"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="400" rx="24" fill="url(#rGrad)"/>
+  <!-- Silhouette Camion Benne & Tracteur -->
+  <g transform="translate(60, 110)">
+    <!-- Cabine Poids Lourd -->
+    <rect x="50" y="70" width="80" height="110" rx="10" fill="#FFDD00"/>
+    <rect x="60" y="80" width="60" height="45" rx="5" fill="#67E8F9"/>
+    <!-- Benne arrière -->
+    <path d="M140,90 L340,90 L320,180 L140,180 Z" fill="#D97706"/>
+    <!-- Roues énormes -->
+    <circle cx="90" cy="185" r="32" fill="#1F2937" stroke="#111" stroke-width="6"/>
+    <circle cx="200" cy="185" r="32" fill="#1F2937" stroke="#111" stroke-width="6"/>
+    <circle cx="270" cy="185" r="32" fill="#1F2937" stroke="#111" stroke-width="6"/>
+    <circle cx="90" cy="185" r="14" fill="#9CA3AF"/>
+    <circle cx="200" cy="185" r="14" fill="#9CA3AF"/>
+    <circle cx="270" cy="185" r="14" fill="#9CA3AF"/>
+  </g>
+  <text x="250" y="335" font-family="Arial, sans-serif" font-weight="bold" font-size="18" fill="#ffffff" text-anchor="middle">PARC LOCATION HAUTE CAPACITÉ</text>
+  <text x="250" y="360" font-family="Arial, sans-serif" font-size="13" fill="#81B39D" text-anchor="middle">Pelles • Bennes • Bulldozers • Chariots</text>
+</svg>

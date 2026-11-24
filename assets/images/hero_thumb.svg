@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="100%" height="100%">
+  <defs>
+    <linearGradient id="thumbBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f3b1e"/>
+      <stop offset="100%" stop-color="#03300D"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="250" rx="20" fill="url(#thumbBg)"/>
+  <!-- Image de chantier stylisée -->
+  <path d="M0,180 Q100,160 200,175 T400,165 L400,250 L0,250 Z" fill="#2d2217" opacity="0.8"/>
+  <rect x="50" y="90" width="100" height="60" rx="10" fill="#F59E0B" opacity="0.85"/>
+  <rect x="220" y="70" width="120" height="80" rx="12" fill="#81B39D" opacity="0.3"/>
+  <!-- Bouton Play central brillant -->
+  <circle cx="200" cy="115" r="32" fill="#81B39D"/>
+  <circle cx="200" cy="115" r="40" fill="#81B39D" opacity="0.3"/>
+  <polygon points="192,100 216,115 192,130" fill="#03300D"/>
+  <text x="200" y="195" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#ffffff" text-anchor="middle">NOS ENGINS SUR LE TERRAIN</text>
+  <text x="200" y="215" font-family="Arial, sans-serif" font-size="11" fill="#81B39D" text-anchor="middle">Chantiers Abidjan & Grand Bassam</text>
+</svg>

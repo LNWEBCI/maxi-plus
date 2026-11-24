@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 650" width="100%" height="100%">
+  <defs>
+    <filter id="mDrop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- Châssis smartphone moderne -->
+  <g filter="url(#mDrop)" transform="translate(60, 25)">
+    <rect width="330" height="600" rx="42" fill="#1E293B" stroke="#475569" stroke-width="6"/>
+    <!-- Écran intérieur -->
+    <rect x="12" y="12" width="306" height="576" rx="34" fill="#F8FAFC"/>
+    <!-- Caméra frontale / Dynamic Island -->
+    <rect x="110" y="22" width="110" height="24" rx="12" fill="#0F172A"/>
+    
+    <!-- Header WhatsApp MAXI PLUS -->
+    <rect x="12" y="55" width="306" height="65" fill="#03300D"/>
+    <circle cx="45" cy="88" r="20" fill="#81B39D"/>
+    <text x="45" y="93" font-family="Arial, sans-serif" font-weight="900" font-size="12" fill="#03300D" text-anchor="middle">MP</text>
+    <text x="75" y="82" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#ffffff">MAXI PLUS SARL</text>
+    <text x="75" y="98" font-family="Arial, sans-serif" font-size="10" fill="#81B39D">En ligne • Réponse en 5 min</text>
+
+    <!-- Zone de messages -->
+    <!-- Message 1 Client -->
+    <g transform="translate(90, 140)">
+      <rect width="210" height="60" rx="14" fill="#DCFCE7"/>
+      <text x="12" y="24" font-family="Arial, sans-serif" font-size="11" fill="#166534">Bonjour, avez-vous en stock</text>
+      <text x="12" y="40" font-family="Arial, sans-serif" font-weight="bold" font-size="11" fill="#166534">le filtre SDLG 956L à Abidjan ?</text>
+      <text x="175" y="52" font-family="Arial, sans-serif" font-size="9" fill="#15803D">08:14</text>
+    </g>
+
+    <!-- Message 2 MAXI PLUS -->
+    <g transform="translate(25, 215)">
+      <rect width="220" height="95" rx="14" fill="#ffffff" stroke="#E2E8F0"/>
+      <text x="12" y="24" font-family="Arial, sans-serif" font-weight="bold" font-size="11" fill="#03300D">MAXI PLUS Service Commercial :</text>
+      <text x="12" y="42" font-family="Arial, sans-serif" font-size="11" fill="#334155">Oui disponible immédiatement !</text>
+      <text x="12" y="60" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#059669">Prix : 25 000 FCFA TTC</text>
+      <text x="12" y="78" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Livraison possible en 2h sur site.</text>
+      <text x="185" y="87" font-family="Arial, sans-serif" font-size="9" fill="#94A3B8">08:15</text>
+    </g>
+
+    <!-- Carte produit interactive dans l'app -->
+    <g transform="translate(25, 330)">
+      <rect width="280" height="160" rx="16" fill="#F1F5F9" stroke="#CBD5E1"/>
+      <rect x="15" y="15" width="80" height="75" rx="10" fill="#81B39D" opacity="0.3"/>
+      <text x="105" y="35" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#03300D">Pelle SDLG E6210F</text>
+      <text x="105" y="55" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Location : 220 000 FCFA/j</text>
+      <rect x="105" y="68" width="85" height="20" rx="10" fill="#22C55E"/>
+      <text x="147" y="82" font-family="Arial, sans-serif" font-weight="bold" font-size="9" fill="#ffffff" text-anchor="middle">DISPONIBLE</text>
+
+      <!-- Bouton Commander -->
+      <rect x="15" y="105" width="250" height="38" rx="10" fill="#03300D"/>
+      <text x="140" y="128" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#ffffff" text-anchor="middle">COMMANDER EN 1 CLIC</text>
+    </g>
+
+    <!-- Barre de saisie inférieure -->
+    <rect x="12" y="525" width="306" height="50" fill="#ffffff" stroke="#E2E8F0"/>
+    <rect x="25" y="535" width="230" height="30" rx="15" fill="#F1F5F9"/>
+    <text x="40" y="554" font-family="Arial, sans-serif" font-size="11" fill="#94A3B8">Écrivez votre message...</text>
+    <circle cx="285" cy="550" r="16" fill="#22C55E"/>
+    <polygon points="280,544 293,550 280,556" fill="#ffffff"/>
+  </g>
+</svg>

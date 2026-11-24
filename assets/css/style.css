@@ -1,0 +1,403 @@
+/* assets/css/style.css - Styles Ultra-Professionnels & Animations pour MAXI PLUS SARL */
+:root {
+  --color-primary: #03300D;
+  --color-primary-dark: #011a07;
+  --color-primary-light: #064d16;
+  --color-mint: #81B39D;
+  --color-mint-light: #a8d5c2;
+  --color-mint-dark: #5c8f78;
+  --color-accent-yellow: #f59e0b;
+  --color-bg-light: #f8fafc;
+  --sidebar-width: 280px;
+  --sidebar-collapsed: 88px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Cabinet+Grotesk:wght@600;700;800;900&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Cabinet Grotesk', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* ==============================================================
+   ANIMATIONS ULTRA-FLUIDES & EFFETS VISUELS
+   ============================================================== */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.5deg); }
+}
+
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(10px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.08); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==============================================================
+   HERO CONTAINER AVEC COURBE SIGNATURE DE LA MAQUETTE
+   ============================================================== */
+/* ==============================================================
+   HERO IMMERSIF SANS BORDURES BLANCHES (FUSION TOTALE NAVBAR/HERO)
+   ============================================================== */
+.hero-fullscreen-dark {
+  background: radial-gradient(circle at 75% 35%, rgba(129, 179, 157, 0.22) 0%, transparent 55%),
+              linear-gradient(175deg, #011406 0%, #03300D 50%, #011406 100%);
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(129, 179, 157, 0.2);
+  width: 100%;
+}
+
+/* Animation flottante cinématique du tracteur */
+@keyframes tractorHover {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.7));
+  }
+  50% {
+    transform: translateY(-12px) scale(1.02);
+    filter: drop-shadow(0 35px 45px rgba(129, 179, 157, 0.25));
+  }
+}
+
+.animate-tractor {
+  animation: tractorHover 6s ease-in-out infinite;
+}
+
+.hero-curved-container {
+  background: radial-gradient(circle at 80% 20%, rgba(129, 179, 157, 0.18) 0%, transparent 50%),
+              linear-gradient(145deg, #011a07 0%, #03300D 45%, #084016 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ligne lumineuse en dégradé */
+.glow-border-top {
+  position: relative;
+}
+.glow-border-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(129, 179, 157, 0.6), transparent);
+}
+
+/* ==============================================================
+   GLASSMORPHISM & BADGES ÉLÉGANTS
+   ============================================================== */
+.glass-badge {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-badge:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.2);
+}
+
+.glass-badge-dark {
+  background: rgba(3, 48, 13, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(129, 179, 157, 0.35);
+  box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* ==============================================================
+   NAVBAR FIXÉE & EFFET SCROLL (VERT TRÈS SOMBRE PROFOND TIRE SUR LE NOIR)
+   ============================================================== */
+.navbar-fixed-dark {
+  background-color: #011406; /* Vert pur très sombre tirant sur le noir */
+  border-bottom: 1px solid rgba(129, 179, 157, 0.15);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-scrolled {
+  background-color: rgba(1, 15, 6, 0.94) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(129, 179, 157, 0.3) !important;
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5) !important;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+/* Lueur animée en gradient sur la navbar */
+.navbar-glow-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(129, 179, 157, 0.6), transparent);
+}
+
+/* Badge vibrant */
+.badge-pulse {
+  box-shadow: 0 0 15px rgba(129, 179, 157, 0.4);
+}
+.service-card-dark {
+  background: linear-gradient(155deg, #03300D 0%, #021f08 100%);
+  border: 1px solid rgba(129, 179, 157, 0.25);
+  border-radius: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 15px 35px -10px rgba(3, 48, 13, 0.3);
+}
+.service-card-dark:hover {
+  transform: translateY(-6px);
+  border-color: rgba(129, 179, 157, 0.6);
+  box-shadow: 0 25px 50px -12px rgba(3, 48, 13, 0.45);
+}
+
+.service-card-light {
+  background: linear-gradient(155deg, #f0f7f3 0%, #ffffff 100%);
+  border: 1px solid rgba(129, 179, 157, 0.35);
+  border-radius: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.05);
+}
+.service-card-light:hover {
+  transform: translateY(-6px);
+  border-color: #81B39D;
+  box-shadow: 0 25px 50px -12px rgba(129, 179, 157, 0.22);
+}
+
+/* Cartes interactives catalogue */
+.product-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: #81B39D;
+  box-shadow: 0 16px 32px -8px rgba(129, 179, 157, 0.25);
+}
+
+/* Optimisation mobile 2 colonnes */
+@media (max-width: 640px) {
+  .mobile-card-tight {
+    padding: 0.65rem !important;
+    border-radius: 1rem !important;
+  }
+  .mobile-card-tight .product-img-box {
+    padding: 0.5rem !important;
+    border-radius: 0.75rem !important;
+  }
+}
+
+/* ==============================================================
+   BOUTONS MODERNES AVEC EFFET SHINE
+   ============================================================== */
+.btn-primary-mint {
+  background: linear-gradient(135deg, #81B39D 0%, #6da78f 100%);
+  color: #03300D;
+  font-weight: 800;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary-mint::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  transition: 0.6s;
+}
+.btn-primary-mint:hover::after {
+  left: 150%;
+}
+.btn-primary-mint:hover {
+  background: linear-gradient(135deg, #91c3ad 0%, #7db59e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -6px rgba(129, 179, 157, 0.5);
+}
+
+.btn-primary-dark {
+  background: linear-gradient(135deg, #03300D 0%, #011a07 100%);
+  color: #ffffff;
+  font-weight: 800;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary-dark:hover {
+  background: linear-gradient(135deg, #084817 0%, #03300D 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -6px rgba(3, 48, 13, 0.4);
+}
+
+/* ==============================================================
+   SIDEBAR ADMIN DESIGN PROFESSIONNEL
+   ============================================================== */
+.admin-sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #021f08 0%, #03300D 60%, #011605 100%);
+  border-right: 1px solid rgba(129, 179, 157, 0.2);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.admin-nav-item {
+  position: relative;
+  transition: all 0.2s ease;
+  color: #cbd5e1;
+}
+
+.admin-nav-item:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-nav-item.active {
+  background: linear-gradient(90deg, rgba(129, 179, 157, 0.25) 0%, rgba(129, 179, 157, 0.08) 100%);
+  color: #81B39D;
+  font-weight: 800;
+  border-left: 4px solid #81B39D;
+}
+
+/* ==============================================================
+   TABLEAUX ULTRA-STABLES SUR UN SEUL NIVEAU (ZOOM & RESPONSIVE)
+   ============================================================== */
+.table-single-line th,
+.table-single-line td {
+  white-space: nowrap !important;
+  vertical-align: middle;
+}
+
+.table-single-line {
+  min-width: 1150px !important;
+}
+
+/* Badges de statuts */
+.badge-disponible {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-location {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-maintenance {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* ==============================================================
+   SCROLLBAR STYLISÉE
+   ============================================================== */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #81B39D;
+}
+
+/* ==============================================================
+   IMPRESSION DE FACTURE PROFORMA / BON DE COMMANDE
+   ============================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-invoice, #printable-invoice * {
+    visibility: visible;
+  }
+  #printable-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white;
+  }
+}

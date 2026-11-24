@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mG_machine_tractor_truck.svg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f3b1e"/>
+      <stop offset="100%" stop-color="#03300D"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="18" fill="url(#mG_machine_tractor_truck.svg)"/>
+  <!-- Silhouette industrielle -->
+  <rect x="50" y="90" width="210" height="90" rx="12" fill="#3B82F6"/>
+  <rect x="70" y="70" width="80" height="50" rx="8" fill="#111827"/>
+  <rect x="75" y="75" width="70" height="40" rx="4" fill="#67E8F9" opacity="0.8"/>
+  <circle cx="100" cy="190" r="30" fill="#1F2937" stroke="#111" stroke-width="4"/>
+  <circle cx="210" cy="190" r="30" fill="#1F2937" stroke="#111" stroke-width="4"/>
+  <text x="200" y="245" font-family="Arial, sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle">Tracteur Porte-Engin Shacman</text>
+  <text x="200" y="270" font-family="Arial, sans-serif" font-weight="bold" font-size="13" fill="#81B39D" text-anchor="middle">MODÈLE : Shacman F3000</text>
+</svg>

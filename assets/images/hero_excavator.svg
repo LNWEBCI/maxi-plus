@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a2c16" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#031f0a" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="yellowMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFDD00"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4B5563"/>
+      <stop offset="100%" stop-color="#1F2937"/>
+    </linearGradient>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#81B39D"/>
+      <stop offset="100%" stop-color="#03300D"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Fond dynamique -->
+  <rect width="800" height="600" fill="url(#skyGrad)" rx="24"/>
+  <circle cx="580" cy="220" r="220" fill="#81B39D" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="200" cy="450" r="180" fill="#22c55e" opacity="0.08" filter="url(#glow)"/>
+
+  <!-- Sol terrassement & chantier BTP -->
+  <path d="M0,480 Q200,460 400,485 T800,470 L800,600 L0,600 Z" fill="#2b2319" opacity="0.95"/>
+  <path d="M0,510 Q250,490 500,520 T800,500 L800,600 L0,600 Z" fill="#1c160e"/>
+
+  <!-- Groupe Engin (Pelle Mécanique SDLG/Cat) -->
+  <g filter="url(#shadow)" transform="translate(60, 40)">
+    <!-- Chenilles / Train de roulement -->
+    <rect x="220" y="380" width="340" height="70" rx="35" fill="url(#darkMetal)" stroke="#111827" stroke-width="4"/>
+    <g fill="#9CA3AF">
+      <circle cx="260" cy="415" r="24" fill="#374151" stroke="#111827" stroke-width="4"/>
+      <circle cx="310" cy="415" r="18"/>
+      <circle cx="360" cy="415" r="18"/>
+      <circle cx="410" cy="415" r="18"/>
+      <circle cx="460" cy="415" r="18"/>
+      <circle cx="520" cy="415" r="24" fill="#374151" stroke="#111827" stroke-width="4"/>
+    </g>
+    <!-- Patins de chenille crantés -->
+    <path d="M220,380 H560 M220,450 H560" stroke="#111" stroke-width="6" stroke-dasharray="12,6"/>
+
+    <!-- Tourelle / Corps supérieur -->
+    <path d="M260,330 L490,330 L480,380 L250,380 Z" fill="#1F2937"/>
+    <path d="M340,240 L480,240 L490,330 L320,330 Z" fill="url(#yellowMetal)"/>
+    
+    <!-- Contrepoids arrière -->
+    <path d="M470,240 Q540,250 530,340 L480,340 Z" fill="#D97706"/>
+    <rect x="480" y="270" width="35" height="15" rx="3" fill="#1F2937"/>
+    <text x="485" y="282" font-family="Arial, sans-serif" font-weight="900" font-size="10" fill="#FFDD00">SDLG</text>
+
+    <!-- Cabine opérateur vitrée -->
+    <path d="M270,240 L340,240 L340,330 L260,330 Z" fill="#111827"/>
+    <path d="M275,248 L330,248 L330,310 L268,310 Z" fill="#67E8F9" opacity="0.75"/>
+    <line x1="290" y1="248" x2="285" y2="310" stroke="#374151" stroke-width="3"/>
+    <!-- Siège opérateur -->
+    <rect x="295" y="275" width="20" height="25" rx="3" fill="#E5E7EB" opacity="0.6"/>
+
+    <!-- Flèche principale (Boom) -->
+    <path d="M340,280 L230,130 L200,140 L310,310 Z" fill="url(#yellowMetal)"/>
+    <circle cx="330" cy="290" r="10" fill="#374151"/>
+    
+    <!-- Vérin de flèche hydraulique chrome -->
+    <line x1="350" y1="310" x2="260" y2="190" stroke="#9CA3AF" stroke-width="8"/>
+    <line x1="335" y1="310" x2="280" y2="230" stroke="#1F2937" stroke-width="12"/>
+
+    <!-- Balancier (Arm) -->
+    <path d="M215,135 L90,260 L70,245 L200,125 Z" fill="url(#yellowMetal)"/>
+    <circle cx="210" cy="135" r="8" fill="#111827"/>
+    <circle cx="80" cy="255" r="7" fill="#111827"/>
+
+    <!-- Vérin de godet -->
+    <line x1="160" y1="170" x2="80" y2="235" stroke="#E5E7EB" stroke-width="6"/>
+
+    <!-- Godet d'excavation avec dents d'usure -->
+    <path d="M80,255 C60,265 40,295 55,340 C75,370 120,360 125,320 L100,280 Z" fill="#374151"/>
+    <!-- Dents du godet en acier forgé -->
+    <polygon points="50,345 35,365 45,368 58,350" fill="#F59E0B"/>
+    <polygon points="65,355 52,375 62,378 73,360" fill="#F59E0B"/>
+    <polygon points="80,362 70,385 80,387 90,365" fill="#F59E0B"/>
+    <polygon points="98,362 92,385 102,386 108,365" fill="#F59E0B"/>
+
+    <!-- Inscription Maxi Plus sur la flèche -->
+    <text x="240" y="200" transform="rotate(-52 240 200)" font-family="Arial, sans-serif" font-weight="900" font-size="16" fill="#03300D" letter-spacing="1">MAXI PLUS</text>
+  </g>
+
+  <!-- Badges flottants stylés (comme sur la maquette de référence) -->
+  <g transform="translate(480, 70)" filter="url(#shadow)">
+    <rect width="260" height="70" rx="16" fill="#ffffff" fill-opacity="0.95"/>
+    <circle cx="40" cy="35" r="22" fill="#81B39D"/>
+    <path d="M30,35 L37,42 L50,28" stroke="#03300D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="75" y="30" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#03300D">+500 PIÈCES EN STOCK</text>
+    <text x="75" y="48" font-family="Arial, sans-serif" font-size="12" fill="#4B5563">Disponibles immédiatement à Abidjan</text>
+  </g>
+
+  <g transform="translate(60, 480)" filter="url(#shadow)">
+    <rect width="250" height="65" rx="16" fill="#03300D" stroke="#81B39D" stroke-width="2"/>
+    <circle cx="35" cy="32" r="18" fill="#81B39D"/>
+    <!-- Icône tracteur / engin -->
+    <path d="M25,35 H45 M30,28 H40 M28,38 A4,4 0 1,1 28,30 M42,38 A4,4 0 1,1 42,30" stroke="#03300D" stroke-width="2" fill="none"/>
+    <text x="65" y="27" font-family="Arial, sans-serif" font-weight="bold" font-size="13" fill="#ffffff">PARC D'ENGINS EN LOCATION</text>
+    <text x="65" y="45" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#81B39D">Tarifs en Francs CFA / Jour & Mois</text>
+  </g>
+</svg>
