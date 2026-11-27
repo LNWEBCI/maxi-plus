@@ -6,6 +6,20 @@ const formatFCFA = (amount) => {
   return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
 };
 
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return { date: 'Aujourd\'hui', time: '--:--' };
+  try {
+    const safeStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+    const d = new Date(safeStr);
+    if (isNaN(d.getTime())) return { date: dateStr, time: '' };
+    const dateFormatted = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeFormatted = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return { date: dateFormatted, time: timeFormatted };
+  } catch (e) {
+    return { date: dateStr, time: '' };
+  }
+};
+
 function AdminApp() {
   const [auth, setAuth] = useState(window.ADMIN_BOOTSTRAP || { isAuth: false, user: null });
   const [email, setEmail] = useState('admin@maxiplus.ci');
@@ -418,7 +432,7 @@ function AdminApp() {
           </form>
 
           <div className="text-center pt-2">
-            <a href="../index.php" className="text-xs text-slate-500 hover:text-[#03300D] font-bold">
+            <a href="index.html" className="text-xs text-slate-500 hover:text-[#03300D] font-bold">
               ← Retour au site public
             </a>
           </div>
@@ -585,7 +599,7 @@ function AdminApp() {
         {/* Pied de Sidebar : Site public & Déconnexion */}
         <div className="px-4 space-y-2 border-t border-white/10 pt-4">
           <a
-            href="../index.php"
+            href="index.html"
             target="_blank"
             className={`w-full p-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 flex items-center gap-3 text-xs font-bold transition-all ${
               sidebarCollapsed ? 'justify-center' : ''
@@ -795,8 +809,14 @@ function AdminApp() {
                       {orders.slice(0, 5).map(ord => (
                         <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-3.5 px-4 font-mono font-black text-[#03300D] whitespace-nowrap">{ord.order_ref}</td>
-                          <td className="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
-                            {ord.created_at ? new Date(ord.created_at).toLocaleDateString('fr-FR') : 'Récemment'}
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <div className="font-bold text-slate-700 text-xs">{formatDateTime(ord.created_at).date}</div>
+                            <div className="text-[10px] text-emerald-700 font-mono font-semibold flex items-center gap-1 mt-0.5">
+                              <svg className="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{formatDateTime(ord.created_at).time}</span>
+                            </div>
                           </td>
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             <span className="font-bold text-slate-800 whitespace-nowrap">{ord.customer_name}</span>
@@ -914,8 +934,14 @@ function AdminApp() {
                       return (
                         <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-4 px-4 font-mono font-black text-[#03300D] whitespace-nowrap">{ord.order_ref}</td>
-                          <td className="py-4 px-4 text-slate-500 text-[11px] whitespace-nowrap">
-                            {ord.created_at ? new Date(ord.created_at).toLocaleDateString('fr-FR') : 'Récemment'}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <div className="font-bold text-slate-700 text-xs">{formatDateTime(ord.created_at).date}</div>
+                            <div className="text-[10px] text-emerald-700 font-mono font-semibold flex items-center gap-1 mt-0.5">
+                              <svg className="w-3 h-3 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{formatDateTime(ord.created_at).time}</span>
+                            </div>
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             <span className="font-bold text-slate-800 whitespace-nowrap block">{ord.customer_name}</span>
@@ -1310,6 +1336,12 @@ function AdminApp() {
               <div>
                 <span className="text-[10px] font-mono font-bold text-[#81B39D]">BON DE COMMANDE OFFICIEL</span>
                 <h3 className="text-lg font-black font-display">{selectedOrder.order_ref}</h3>
+                <div className="text-[11px] text-emerald-300 font-mono font-semibold flex items-center gap-1.5 mt-0.5">
+                  <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Validée le {formatDateTime(selectedOrder.created_at).date} à {formatDateTime(selectedOrder.created_at).time}</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button 
@@ -1336,7 +1368,7 @@ function AdminApp() {
                   <div className="text-slate-500">BTP & Maintenance d'engins lourds</div>
                   <div>Angré Djorobité, Garage zone industrielle, Abidjan</div>
                   <div>RCCM: CI-ABJ-03-2018-B13-21394 • NCC: 1843673A</div>
-                  <div>Tél: +225 07 45 88 12 34 / 05 12 33 44 55</div>
+                  <div>Tél: +225 07 09 36 50 23 / 05 12 33 44 55</div>
                 </div>
 
                 <div className="text-right space-y-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
@@ -1344,6 +1376,9 @@ function AdminApp() {
                   <div className="font-black text-[#03300D] text-sm">{selectedOrder.customer_name}</div>
                   <div>{selectedOrder.customer_phone}</div>
                   <div>{selectedOrder.customer_city}</div>
+                  <div className="pt-1.5 text-[10px] text-slate-500 font-mono border-t border-slate-200 mt-1">
+                    Date : <strong className="text-slate-800">{formatDateTime(selectedOrder.created_at).date}</strong> à <strong className="text-emerald-700">{formatDateTime(selectedOrder.created_at).time}</strong>
+                  </div>
                 </div>
               </div>
 

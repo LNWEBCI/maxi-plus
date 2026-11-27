@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration | MAXI PLUS SARL - Gestion Commandes, Engins & Pièces</title>
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#03300D',
+              dark: '#021f08',
+              light: '#81B39D',
+              mint: '#a3d1be',
+              sage: '#6b9c86',
+              accent: '#22c55e',
+              yellow: '#f59e0b',
+              gold: '#fbbf24'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Cabinet Grotesk"', '"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- React 18 & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased selection:bg-[#81B39D] selection:text-[#03300D]">
+
+  <div id="admin-root">
+    <div class="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+      <div class="text-center p-8">
+        <div class="inline-block w-12 h-12 border-4 border-[#81B39D] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <h2 class="text-xl font-bold text-white">Administration MAXI PLUS SARL</h2>
+        <p class="text-slate-400 text-xs mt-1">Chargement du tableau de bord...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Base de Données Client & Synchronisation LocalStorage (Compatible Vercel) -->
+  <script src="assets/js/db.js"></script>
+
+  <script>
+    window.ADMIN_BOOTSTRAP = window.MaxiDB ? window.MaxiDB.getAuth() : {
+      isAuth: false,
+      user: null
+    };
+  </script>
+
+  <script type="text/babel" src="assets/js/admin.js"></script>
+</body>
+</html>

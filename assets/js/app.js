@@ -134,9 +134,9 @@ function App() {
     return products.filter(p => {
       const matchCat = selectedCategory === 'all' || p.category_id == selectedCategory || p.category_name?.toLowerCase().includes(selectedCategory.toLowerCase());
       const query = searchQuery.toLowerCase().trim();
-      const matchQuery = !query || 
-        p.name.toLowerCase().includes(query) || 
-        p.ref.toLowerCase().includes(query) || 
+      const matchQuery = !query ||
+        p.name.toLowerCase().includes(query) ||
+        p.ref.toLowerCase().includes(query) ||
         p.brand?.toLowerCase().includes(query);
       return matchCat && matchQuery;
     });
@@ -178,7 +178,16 @@ function App() {
     return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   }, [cart]);
 
-  // Passer commande
+  const WHATSAPP_PHONE = '2250709365023';
+  const WHATSAPP_DISPLAY = '+225 07 09 36 50 23';
+
+  // Simulateur interactif express de devis (Page d'accueil)
+  const [simType, setSimType] = useState('rental'); // 'rental' ou 'parts'
+  const [simMachineId, setSimMachineId] = useState(1);
+  const [simDuration, setSimDuration] = useState(3);
+  const [simDurationUnit, setSimDurationUnit] = useState('days');
+
+  // Passer commande avec envoi WhatsApp automatique au +225 07 09 36 50 23
   const handleCheckout = async (e) => {
     e.preventDefault();
     if (!customerName || !customerPhone) {
@@ -212,12 +221,28 @@ function App() {
 
       const data = await res.json();
       if (data.success) {
+        const orderRef = data.order_ref;
+        const itemsList = cart.map(item => `• ${item.quantity}x ${item.name} (${item.ref}) : ${formatFCFA(item.price * item.quantity)}`).join('\n');
+        const waMsg = `🔔 *NOUVELLE COMMANDE PIÈCES DÉTACHÉES*\n🏢 *MAXI PLUS SARL - Abidjan*\n----------------------------------------\n📋 *Réf Commande :* ${orderRef}\n👤 *Client :* ${customerName}\n📞 *Téléphone :* ${customerPhone}\n📍 *Ville / Chantier :* ${customerCity}\n----------------------------------------\n📦 *Articles commandés :*\n${itemsList}\n----------------------------------------\n💰 *MONTANT TOTAL :* ${formatFCFA(cartTotal)}\n📝 *Instructions :* ${orderNotes || 'Aucune'}\n📅 *Date :* ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}\n----------------------------------------\n✅ _Merci de confirmer la prise en charge et le délai de livraison._`;
+        const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(waMsg)}`;
+
+        // Tentative d'ouverture automatique de WhatsApp
+        try {
+          window.open(waUrl, '_blank');
+        } catch (err) {
+          console.log('Popup bloqué');
+        }
+
         setOrderSuccess({
-          ref: data.order_ref,
+          ref: orderRef,
           total: cartTotal,
-          phone: customerPhone
+          phone: customerPhone,
+          customerName: customerName,
+          waUrl: waUrl,
+          isRental: false
         });
         setCart([]);
+        setIsCartOpen(false);
       } else {
         alert(data.error || 'Erreur lors de la commande');
       }
@@ -228,7 +253,7 @@ function App() {
     }
   };
 
-  // Réserver un engin
+  // Réserver un engin avec envoi WhatsApp automatique au +225 07 09 36 50 23
   const handleMachineBooking = async (e) => {
     e.preventDefault();
     if (!customerName || !customerPhone) {
@@ -267,11 +292,23 @@ function App() {
 
       const data = await res.json();
       if (data.success) {
+        const orderRef = data.order_ref;
+        const waMsg = `🚜 *DEMANDE DE LOCATION D'ENGIN BTP*\n🏢 *MAXI PLUS SARL - Abidjan*\n----------------------------------------\n📋 *Réf Réservation :* ${orderRef}\n👤 *Client :* ${customerName}\n📞 *Téléphone :* ${customerPhone}\n📍 *Chantier / Ville :* ${customerCity}\n----------------------------------------\n🚜 *Engin souhaité :* ${bookingMachine.name}\n🏷️ *Type / Marque :* ${bookingMachine.type} - ${bookingMachine.brand} ${bookingMachine.model || ''}\n⏱️ *Durée de location :* ${durationNum} ${rentalDurationUnit === 'days' ? 'Jour(s)' : 'Mois'}\n💵 *Tarif unitaire :* ${formatFCFA(rate)} / ${rentalDurationUnit === 'days' ? 'jour' : 'mois'}\n----------------------------------------\n💰 *TOTAL ESTIMÉ :* ${formatFCFA(totalEst)}\n📝 *Précisions chantier :* ${orderNotes || 'Chantier ' + customerCity}\n📅 *Date :* ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}\n----------------------------------------\n✅ _Merci de me confirmer la disponibilité de cet engin et les formalités contractuelles._`;
+        const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(waMsg)}`;
+
+        try {
+          window.open(waUrl, '_blank');
+        } catch (err) {
+          console.log('Popup bloqué');
+        }
+
         setBookingMachine(null);
         setOrderSuccess({
-          ref: data.order_ref,
+          ref: orderRef,
           total: totalEst,
           phone: customerPhone,
+          customerName: customerName,
+          waUrl: waUrl,
           isRental: true,
           machineName: bookingMachine.name
         });
@@ -287,22 +324,21 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 overflow-x-hidden">
-      
+
       {/* 1. TOP BAR & NAVIGATION FIXÉE (FOND VERT TRÈS PUR & PROFOND QUI TIRE SUR LE NOIR) */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'navbar-scrolled' 
-          : 'navbar-fixed-dark'
-      }`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'navbar-scrolled'
+        : 'navbar-fixed-dark'
+        }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}>
-            
+
             {/* Logo officiel MAXI PLUS - Sublime intégration sur fond sombre */}
             <a href="#" className="flex items-center gap-3.5 group">
               <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/95 p-1 border border-white/20 shadow-md flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-[#81B39D] group-hover:shadow-[0_0_20px_rgba(129,179,157,0.4)]">
-                <img 
-                  src={siteData.logoImage} 
-                  alt="MAXI PLUS SARL" 
+                <img
+                  src={siteData.logoImage}
+                  alt="MAXI PLUS SARL"
                   className="w-full h-full object-contain filter drop-shadow-sm"
                   onError={(e) => { e.target.src = 'assets/images/logo.jpg'; }}
                 />
@@ -320,71 +356,63 @@ function App() {
 
             {/* Menu de navigation bureau : Uniquement les 5 éléments avec support multi-pages interactif */}
             <nav className="hidden lg:flex items-center gap-8">
-              <button 
-                onClick={() => navigateTo('services')} 
-                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${
-                  currentPage === 'services' ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
+              <button
+                onClick={() => navigateTo('services')}
+                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${currentPage === 'services' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 <span>Nos services</span>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${
-                  currentPage === 'services' ? 'w-full' : 'w-0 group-hover:w-full'
-                }`}></span>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${currentPage === 'services' ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
               </button>
 
-              <button 
-                onClick={() => navigateTo('rental')} 
-                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${
-                  currentPage === 'rental' ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
+              <button
+                onClick={() => navigateTo('rental')}
+                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${currentPage === 'rental' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 <span>Location d'engins</span>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${
-                  currentPage === 'rental' ? 'w-full' : 'w-0 group-hover:w-full'
-                }`}></span>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${currentPage === 'rental' ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
               </button>
 
-              <button 
-                onClick={() => navigateTo('products')} 
-                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 flex items-center gap-1.5 ${
-                  currentPage === 'products' ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
+              <button
+                onClick={() => navigateTo('products')}
+                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 flex items-center gap-1.5 ${currentPage === 'products' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 <span>Nos pièces</span>
                 <span className="bg-[#81B39D]/30 text-[#81B39D] text-[9px] font-black px-2 py-0.5 rounded-full border border-[#81B39D]/40">En stock</span>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${
-                  currentPage === 'products' ? 'w-full' : 'w-0 group-hover:w-full'
-                }`}></span>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${currentPage === 'products' ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
               </button>
 
-              <button 
-                onClick={() => navigateTo('contact')} 
-                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${
-                  currentPage === 'contact' ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
+              <button
+                onClick={() => navigateTo('contact')}
+                className={`text-xs font-black transition-colors uppercase tracking-wider relative group py-2 ${currentPage === 'contact' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 <span>Contact</span>
-                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${
-                  currentPage === 'contact' ? 'w-full' : 'w-0 group-hover:w-full'
-                }`}></span>
+                <span className={`absolute bottom-0 left-0 h-0.5 bg-[#81B39D] transition-all duration-300 ${currentPage === 'contact' ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
               </button>
 
-              <a 
-                href={`https://wa.me/2250745881234?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations / devis.')}`}
+              <a
+                href={`https://wa.me/2250709365023?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations / devis.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-black text-[#011406] hover:bg-[#9cd4bc] transition-all uppercase tracking-wider flex items-center gap-1.5 bg-[#81B39D] px-4 py-2 rounded-full shadow-md"
               >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
                 <span>WhatsApp</span>
               </a>
             </nav>
 
             {/* Actions à droite */}
             <div className="flex items-center gap-3">
-              
+
               {/* Bouton Panier interactif animé */}
-              <button 
+              <button
                 onClick={() => setIsCartOpen(true)}
                 className={`relative p-3 rounded-2xl bg-white/10 hover:bg-[#81B39D]/20 text-white transition-all duration-300 border border-white/15 ${cartBump ? 'scale-125 bg-[#81B39D]/40' : ''}`}
                 title="Consulter votre commande"
@@ -400,8 +428,8 @@ function App() {
               </button>
 
               {/* Bouton Accès Dashboard Admin mis en valeur */}
-              <a 
-                href="admin/index.php"
+              <a
+                href="admin.html"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#81B39D] hover:text-white text-xs font-black transition-all border border-[#81B39D]/30"
                 title="Accéder au tableau de bord"
               >
@@ -412,7 +440,7 @@ function App() {
               </a>
 
               {/* Hamburger Mobile */}
-              <button 
+              <button
                 onClick={() => setMobileNavOpen(!mobileNavOpen)}
                 className="lg:hidden p-2.5 rounded-xl bg-white/10 text-white border border-white/15"
               >
@@ -434,16 +462,16 @@ function App() {
             <button onClick={() => { navigateTo('rental'); setMobileNavOpen(false); }} className="block w-full text-left py-2 text-xs font-black text-slate-200 hover:text-white uppercase tracking-wider">Location d'engins</button>
             <button onClick={() => { navigateTo('products'); setMobileNavOpen(false); }} className="block w-full text-left py-2 text-xs font-black text-slate-200 hover:text-white uppercase tracking-wider">Nos pièces</button>
             <button onClick={() => { navigateTo('contact'); setMobileNavOpen(false); }} className="block w-full text-left py-2 text-xs font-black text-slate-200 hover:text-white uppercase tracking-wider">Contact</button>
-            <a 
-              href={`https://wa.me/2250745881234?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations / devis.')}`}
-              target="_blank" 
-              rel="noopener noreferrer" 
-              onClick={() => setMobileNavOpen(false)} 
+            <a
+              href={`https://wa.me/2250709365023?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations / devis.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileNavOpen(false)}
               className="block py-3 px-4 rounded-xl btn-primary-mint text-xs font-black text-center shadow-md"
             >
-              WhatsApp (+225 07 45 88 12 34)
+              WhatsApp (+225 07 09 36 50 23)
             </a>
-            <a href="admin/index.php" className="block py-2.5 px-4 rounded-xl bg-white/10 text-[#81B39D] font-black text-xs text-center border border-[#81B39D]/30">
+            <a href="admin.html" className="block py-2.5 px-4 rounded-xl bg-white/10 text-[#81B39D] font-black text-xs text-center border border-[#81B39D]/30">
               Tableau de Bord Administrateur
             </a>
           </div>
@@ -452,13 +480,13 @@ function App() {
 
       {/* 2. HERO SECTION IMMERSIVE - FOND VERT SOMBRE PUR AVEC LE TRACTEUR EN TRANSPARENCE */}
       <section id="accueil" className="relative pt-24 sm:pt-28 pb-16 lg:pb-24 hero-fullscreen-dark">
-        
+
         {/* IMAGE DU TRACTEUR EN FOND TRANSPARENT (HERO TRACTOR) */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none flex items-center justify-end">
           <div className="w-full lg:w-3/5 h-full relative opacity-25 lg:opacity-40 transition-opacity">
-            <img 
-              src="assets/images/hero_tractor.png" 
-              alt="Tracteur BTP MAXI PLUS" 
+            <img
+              src="assets/images/hero_tractor.png"
+              alt="Tracteur BTP MAXI PLUS"
               className="w-full h-full object-contain object-right lg:scale-110 animate-tractor"
               onError={(e) => { e.target.src = 'assets/images/hero_tractor.jpg'; }}
             />
@@ -474,14 +502,14 @@ function App() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-white">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
+
             {/* Colonne gauche : Typographie équilibrée, concise et très professionnelle */}
             <div className="lg:col-span-7 flex flex-col items-start space-y-5">
-              
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-black text-[#81B39D] tracking-wider uppercase border border-[#81B39D]/30 shadow-lg">
+
+              {/*  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-black text-[#81B39D] tracking-wider uppercase border border-[#81B39D]/30 shadow-lg">
                 <span className="w-2 h-2 rounded-full bg-[#81B39D] animate-ping"></span>
                 <span>IMPORTATION PIÈCES CHINOISES • LOCATION BTP CÔTE D'IVOIRE</span>
-              </div>
+              </div> */}
 
               {/* Titre calibré pour ne pas occuper toute la session */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] font-display">
@@ -491,13 +519,13 @@ function App() {
                 </span>
               </h1>
 
-              <p className="text-slate-300 text-sm sm:text-base max-w-xl font-normal leading-relaxed">
+              {/*  className="text-slate-300 text-sm sm:text-base max-w-xl font-normal leading-relaxed">
                 Réduisez drastiquement les temps d'arrêt de vos chantiers. <strong>MAXI PLUS SARL</strong> distribue en stock physique à Abidjan les pièces certifiées d'origine (SDLG, XCMG, LiuGong, SANY, Cat) et met en location immédiate des engins lourds et tracteurs avec chauffeurs certifiés.
-              </p>
+              </p>*/}
 
               {/* Boutons d'action clairs et directs */}
               <div className="flex flex-wrap items-center gap-3.5 pt-2 w-full sm:w-auto">
-                <button 
+                <button
                   onClick={() => navigateTo('products')}
                   className="px-6 py-3.5 rounded-xl btn-primary-mint text-xs sm:text-sm font-black shadow-xl flex items-center justify-center gap-2.5 group w-full sm:w-auto"
                 >
@@ -509,7 +537,7 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </button>
-                <button 
+                <button
                   onClick={() => navigateTo('rental')}
                   className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-black border border-white/20 backdrop-blur-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto hover:border-[#81B39D]"
                 >
@@ -521,7 +549,7 @@ function App() {
               </div>
 
               {/* Vignette Interactive Vidéo & Visite du Dépôt */}
-              <div 
+              <div
                 onClick={() => setVideoModalOpen(true)}
                 className="flex items-center gap-3.5 bg-black/40 border border-white/15 rounded-xl p-2.5 pr-5 backdrop-blur-md cursor-pointer hover:bg-black/60 hover:border-[#81B39D]/50 transition-all group shadow-lg"
               >
@@ -546,14 +574,14 @@ function App() {
 
             {/* Colonne droite : Visuel Engin en vedette avec Badges discrets et élégants */}
             <div className="lg:col-span-5 relative flex items-center justify-center mt-6 lg:mt-0">
-              
+
               <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-                
+
                 {/* Image du tracteur / engin avec animation dynamique */}
                 <div className="w-full h-full animate-tractor flex items-center justify-center">
-                  <img 
-                    src="assets/images/hero_tractor.png" 
-                    alt="Tracteur MAXI PLUS" 
+                  <img
+                    src="assets/images/hero_tractor.png"
+                    alt="Tracteur MAXI PLUS"
                     className="w-full h-full object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"
                     onError={(e) => { e.target.src = siteData.heroImage; }}
                   />
@@ -612,10 +640,213 @@ function App() {
         </div>
       </section>
 
+      {/* BANDEAU DÉFILANT CONTINU DES GRANDES MARQUES BTP (MARQUEE TICKER) */}
+      <div className="w-full bg-[#011406] border-y border-[#81B39D]/20 py-4 relative z-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 mb-2 flex items-center justify-between">
+          <span className="text-[10px] font-black tracking-widest uppercase text-[#81B39D] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>MARQUES & CONSTRUCTEURS COUVERTS EN CÔTE D'IVOIRE</span>
+          </span>
+          <span className="text-[10px] text-slate-400 font-semibold hidden sm:inline">Pièces certifiées & compatibles 100% origine</span>
+        </div>
+
+        <div className="marquee-container py-1">
+          <div className="marquee-track">
+            {[
+              { name: 'SDLG', desc: 'Pelles & Chargeuses', icon: '🚜' },
+              { name: 'XCMG', desc: 'Engins Lourds BTP', icon: '🏗️' },
+              { name: 'LIUGONG', desc: 'Chargeuses & Niveleuses', icon: '⚙️' },
+              { name: 'SHANTUI', desc: 'Bulldozers & Bouteurs', icon: '🚧' },
+              { name: 'SANY', desc: 'Grues & Terrassement', icon: '🛠️' },
+              { name: 'CATERPILLAR', desc: 'Moteurs & Pièces Cat', icon: '⚡' },
+              { name: 'KOMATSU', desc: 'Hydraulique & Chantiers', icon: '🔧' },
+              { name: 'HOWO SINOTRUK', desc: 'Bennes 6x4 & 8x4', icon: '🚛' },
+              { name: 'SHACMAN', desc: 'Tracteurs Routiers F3000', icon: '🚚' },
+              { name: 'WEICHAI', desc: 'Moteurs Diesel WD615', icon: '🔩' },
+              { name: 'CUMMINS', desc: 'Motorisation Industrielle', icon: '🔋' },
+              { name: 'HELI', desc: 'Chariots Élévateurs 3T-5T', icon: '📦' },
+              { name: 'SDLG', desc: 'Pelles & Chargeuses', icon: '🚜' },
+              { name: 'XCMG', desc: 'Engins Lourds BTP', icon: '🏗️' },
+              { name: 'LIUGONG', desc: 'Chargeuses & Niveleuses', icon: '⚙️' },
+              { name: 'SHANTUI', desc: 'Bulldozers & Bouteurs', icon: '🚧' },
+              { name: 'SANY', desc: 'Grues & Terrassement', icon: '🛠️' },
+              { name: 'CATERPILLAR', desc: 'Moteurs & Pièces Cat', icon: '⚡' },
+              { name: 'KOMATSU', desc: 'Hydraulique & Chantiers', icon: '🔧' },
+              { name: 'HOWO SINOTRUK', desc: 'Bennes 6x4 & 8x4', icon: '🚛' },
+              { name: 'SHACMAN', desc: 'Tracteurs Routiers F3000', icon: '🚚' },
+              { name: 'WEICHAI', desc: 'Moteurs Diesel WD615', icon: '🔩' },
+              { name: 'CUMMINS', desc: 'Motorisation Industrielle', icon: '🔋' },
+              { name: 'HELI', desc: 'Chariots Élévateurs 3T-5T', icon: '📦' }
+            ].map((brand, bIdx) => (
+              <div
+                key={bIdx}
+                className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white whitespace-nowrap hover:bg-white/10 hover:border-[#81B39D]/40 transition-all flex-shrink-0"
+              >
+                <span className="text-base">{brand.icon}</span>
+                <div>
+                  <div className="text-xs font-black text-white tracking-wide">{brand.name}</div>
+                  <div className="text-[9px] text-[#81B39D] font-medium">{brand.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ESTIMATEUR EXPRESS & SIMULATEUR DEVIS EN DIRECT */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 mb-6 relative z-20">
+        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#03300D] text-[#81B39D] flex items-center justify-center font-black">
+                ⚡
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-[#03300D] font-display">
+                  Simulateur Express de Devis & Tarifs en Direct
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Calculez immédiatement le coût d'une location ou d'une pièce en Francs CFA et transmettez sur WhatsApp (+225 07 09 36 50 23).
+                </p>
+              </div>
+            </div>
+
+            {/* Sélecteur de mode */}
+            <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200/60 self-start md:self-auto">
+              <button
+                onClick={() => setSimType('rental')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all ${
+                  simType === 'rental' ? 'bg-[#03300D] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                🚜 Location d'Engin
+              </button>
+              <button
+                onClick={() => setSimType('parts')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all ${
+                  simType === 'parts' ? 'bg-[#03300D] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                ⚙️ Pièces de Rechange
+              </button>
+            </div>
+          </div>
+
+          {/* Contenu Simulateur Location */}
+          {simType === 'rental' && (() => {
+            const selectedMach = machines.find(m => m.id === parseInt(simMachineId)) || machines[0] || {};
+            const unitRate = simDurationUnit === 'days' ? (selectedMach.price_day || 0) : (selectedMach.price_month || 0);
+            const estTotal = unitRate * (parseInt(simDuration) || 1);
+            const waSimMsg = `Bonjour MAXI PLUS SARL, je souhaite demander la disponibilité pour la location de : ${selectedMach.name || 'Engin BTP'} pour une durée de ${simDuration} ${simDurationUnit === 'days' ? 'Jour(s)' : 'Mois'}. Estimation : ${formatFCFA(estTotal)}. Chantier en Côte d'Ivoire.`;
+
+            return (
+              <div className="pt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Choisir l'Engin :</label>
+                  <select
+                    value={simMachineId}
+                    onChange={(e) => setSimMachineId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-[#03300D] bg-slate-50 outline-none"
+                  >
+                    {machines.map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.brand})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Durée :</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={simDuration}
+                      onChange={(e) => setSimDuration(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs font-bold outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Période :</label>
+                    <select
+                      value={simDurationUnit}
+                      onChange={(e) => setSimDurationUnit(e.target.value)}
+                      className="w-full px-2.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold bg-white outline-none"
+                    >
+                      <option value="days">Jour(s)</option>
+                      <option value="months">Mois</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                  <div className="text-[10px] font-bold text-emerald-800 uppercase">Tarif Estimé ({simDuration} {simDurationUnit === 'days' ? 'j' : 'mois'})</div>
+                  <div className="text-lg font-black text-emerald-950 font-mono mt-0.5">{formatFCFA(estTotal)}</div>
+                </div>
+
+                <div>
+                  <a
+                    href={`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(waSimMsg)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                  >
+                    <svg className="w-4 h-4 fill-current flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    <span>Transmettre sur WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Contenu Simulateur Pièces */}
+          {simType === 'parts' && (
+            <div className="pt-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Catégorie de Pièce :</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-[#03300D] bg-slate-50 outline-none"
+                >
+                  <option value="all">Toutes les catégories ({products.length} références)</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id.toString()}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Recherche par Mot-clé / Réf :</label>
+                <input
+                  type="text"
+                  placeholder="Ex: SDLG, filtre huile, godet..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs outline-none"
+                />
+              </div>
+
+              <div>
+                <button
+                  onClick={() => {
+                    navigateTo('products');
+                    document.getElementById('catalogue-pieces')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full py-3 px-4 rounded-xl btn-primary-mint text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                >
+                  <span>Explorer les pièces disponibles</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+
       {/* 3. NOS DOMAINES D'EXPERTISE (SERVICES WE PROVIDE - DÉTAILLÉ & COMPLET) */}
-      <section id="services" className={`py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all ${
-        currentPage === 'services' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
-      }`}>
+      <section id="services" className={`py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all ${currentPage === 'services' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
+        }`}>
         {currentPage === 'services' && (
           <div className="mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-2xl">
             <span className="text-xs font-black text-emerald-900 uppercase tracking-wider">Page dédiée : Nos Services</span>
@@ -636,7 +867,7 @@ function App() {
 
         {/* Grille de 4 Services Détaillés & Professionnels */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
+
           {/* Service 1 : Importation & Vente de Pièces */}
           <div className="service-card-dark p-6 sm:p-7 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
             <div>
@@ -729,8 +960,8 @@ function App() {
             </div>
 
             <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between">
-              <a 
-                href={`https://wa.me/2250745881234?text=${encodeURIComponent('Bonjour MAXI PLUS, j\'ai une urgence mécanique sur chantier.')}`}
+              <a
+                href={`https://wa.me/2250709365023?text=${encodeURIComponent('Bonjour MAXI PLUS, j\'ai une urgence mécanique sur chantier.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black inline-flex items-center gap-1.5 shadow-sm"
@@ -765,7 +996,7 @@ function App() {
             </div>
 
             <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between">
-              <a 
+              <a
                 href="#contact"
                 className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#03300D] text-xs font-black inline-flex items-center gap-1.5"
               >
@@ -788,8 +1019,8 @@ function App() {
               <div className="text-xs text-slate-500">Prise en charge officielle : SDLG, XCMG, LIUGONG, SHANTUI, SANY, CATERPILLAR, KOMATSU, WEICHAI.</div>
             </div>
           </div>
-          <a 
-            href={`https://wa.me/2250745881234?text=${encodeURIComponent('Bonjour MAXI PLUS, j\'aimerais vérifier la compatibilité d\'une pièce.')}`}
+          <a
+            href={`https://wa.me/2250709365023?text=${encodeURIComponent('Bonjour MAXI PLUS, j\'aimerais vérifier la compatibilité d\'une pièce.')}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 rounded-2xl btn-primary-mint text-xs font-black whitespace-nowrap shadow-md"
@@ -800,9 +1031,8 @@ function App() {
       </section>
 
       {/* 4. SECTION LOCATION ENGINS, TRACTEURS & POIDS LOURDS */}
-      <section id="engins-location" className={`py-16 bg-slate-100/80 border-y border-slate-200 px-4 sm:px-6 lg:px-8 transition-all ${
-        currentPage === 'rental' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
-      }`}>
+      <section id="engins-location" className={`py-16 bg-slate-100/80 border-y border-slate-200 px-4 sm:px-6 lg:px-8 transition-all ${currentPage === 'rental' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
+        }`}>
         <div className="max-w-7xl mx-auto">
           {currentPage === 'rental' && (
             <div className="mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-2xl">
@@ -810,7 +1040,7 @@ function App() {
               <button onClick={() => navigateTo('home')} className="text-xs text-emerald-700 font-bold hover:underline">← Retour à l'accueil</button>
             </div>
           )}
-          
+
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span className="text-xs font-extrabold uppercase tracking-widest text-[#03300D] bg-[#81B39D]/25 px-4 py-1.5 rounded-full inline-block">
@@ -837,11 +1067,10 @@ function App() {
                 <button
                   key={f.val}
                   onClick={() => setSelectedMachineType(f.val)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    selectedMachineType === f.val 
-                      ? 'bg-[#03300D] text-white shadow-md' 
-                      : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${selectedMachineType === f.val
+                    ? 'bg-[#03300D] text-white shadow-md'
+                    : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
+                    }`}
                 >
                   {f.label}
                 </button>
@@ -857,18 +1086,18 @@ function App() {
               const isMaint = mach.status === 'En maintenance';
 
               return (
-                <div 
-                  key={mach.id} 
+                <div
+                  key={mach.id}
                   className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col overflow-hidden group mobile-card-tight"
                 >
                   <div className="relative aspect-[4/3] bg-gradient-to-br from-[#0a2e16] to-[#03300D] overflow-hidden p-2 sm:p-6 flex items-center justify-center product-img-box">
-                    <img 
-                      src={mach.image} 
-                      alt={mach.name} 
+                    <img
+                      src={mach.image}
+                      alt={mach.name}
                       className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => { e.target.src = 'assets/images/machine_excavator.svg'; }}
                     />
-                    
+
                     {/* Badge Statut */}
                     <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
                       {isDispo && (
@@ -920,11 +1149,10 @@ function App() {
                     <button
                       onClick={() => setBookingMachine(mach)}
                       disabled={!isDispo}
-                      className={`w-full py-2.5 sm:py-3.5 rounded-xl font-black text-[11px] sm:text-xs flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${
-                        isDispo
-                          ? 'btn-primary-dark shadow-md'
-                          : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                      }`}
+                      className={`w-full py-2.5 sm:py-3.5 rounded-xl font-black text-[11px] sm:text-xs flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${isDispo
+                        ? 'btn-primary-dark shadow-md'
+                        : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        }`}
                     >
                       <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -942,9 +1170,8 @@ function App() {
       </section>
 
       {/* 5. SECTION PRODUITS : CATALOGUE DES PIÈCES DÉTACHÉES */}
-      <section id="catalogue-pieces" className={`py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all ${
-        currentPage === 'products' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
-      }`}>
+      <section id="catalogue-pieces" className={`py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all ${currentPage === 'products' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
+        }`}>
         {currentPage === 'products' && (
           <div className="mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-2xl">
             <span className="text-xs font-black text-emerald-900 uppercase tracking-wider">Page dédiée : Catalogue de Nos Pièces Détachées</span>
@@ -984,11 +1211,10 @@ function App() {
         <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-[#03300D] text-white shadow-md'
-                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-            }`}
+            className={`px-5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${selectedCategory === 'all'
+              ? 'bg-[#03300D] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+              }`}
           >
             Toutes les Pièces ({products.length})
           </button>
@@ -996,63 +1222,87 @@ function App() {
             <button
               key={c.id}
               onClick={() => setSelectedCategory(c.id.toString())}
-              className={`px-5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${
-                selectedCategory === c.id.toString()
-                  ? 'bg-[#03300D] text-white shadow-md'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-              }`}
+              className={`px-5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${selectedCategory === c.id.toString()
+                ? 'bg-[#03300D] text-white shadow-md'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
             >
               {c.name}
             </button>
           ))}
         </div>
 
-        {/* Grille des pièces - 2 Colonnes par ligne sur Mobile (grid-cols-2) */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        {/* Grille des pièces - STRICTEMENT 2 COLONNES PAR LIGNE & RESPONSIVE MOBILE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {filteredProducts.map(prod => (
-            <div 
-              key={prod.id} 
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm product-card-hover p-2.5 sm:p-4 flex flex-col justify-between group mobile-card-tight"
+            <div
+              key={prod.id}
+              className="catalog-card-2col rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 group relative overflow-hidden shadow-sm hover:shadow-xl transition-all"
             >
-              <div>
-                <div className="relative aspect-square rounded-xl bg-slate-50 border border-slate-100 p-2 sm:p-4 mb-2.5 sm:mb-4 flex items-center justify-center overflow-hidden product-img-box">
-                  <img 
-                    src={prod.image} 
-                    alt={prod.name} 
-                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => { e.target.src = 'assets/images/part_filter_oil.svg'; }}
-                  />
-                  <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[8px] sm:text-[10px] font-mono px-1.5 sm:px-2 py-0.5 rounded">
-                    {prod.ref}
-                  </div>
-                  {prod.stock > 0 && (
-                    <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-emerald-100 text-emerald-800 text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full">
-                      Stock: {prod.stock}
-                    </div>
-                  )}
+              {/* Boîte Image avec Zoom & Badges */}
+              <div className="relative w-full sm:w-44 sm:h-44 aspect-square rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/80 p-3 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <img
+                  src={prod.image}
+                  alt={prod.name}
+                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => { e.target.src = 'assets/images/part_filter_oil.svg'; }}
+                />
+                <div className="absolute top-2 left-2 bg-slate-900/85 backdrop-blur-sm text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded-md shadow-sm">
+                  {prod.ref}
                 </div>
-
-                <div className="text-[9px] sm:text-[11px] font-black text-[#81B39D] uppercase tracking-wider">{prod.brand}</div>
-                <h3 className="text-xs sm:text-sm font-black text-[#03300D] line-clamp-2 mt-0.5 sm:mt-1 leading-snug">{prod.name}</h3>
-                <p className="text-slate-500 text-[10px] sm:text-xs mt-1 sm:mt-1.5 line-clamp-2 leading-relaxed hidden sm:block">{prod.description}</p>
+                {prod.stock > 0 && (
+                  <div className="absolute bottom-2 left-2 bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200 shadow-sm flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                    <span>En Stock ({prod.stock})</span>
+                  </div>
+                )}
               </div>
 
-              <div className="pt-2.5 sm:pt-4 mt-2 sm:mt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              {/* Détails Produit */}
+              <div className="flex-1 min-w-0 w-full flex flex-col justify-between space-y-3">
                 <div>
-                  <div className="text-[8px] sm:text-[10px] text-slate-400 font-semibold uppercase">Prix TTC</div>
-                  <div className="text-xs sm:text-base font-black text-[#03300D]">{formatFCFA(prod.price)}</div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black text-[#03300D] bg-[#81B39D]/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      {prod.brand || 'SDLG / LiuGong'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold">{prod.category_name || 'Pièce certifiée'}</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-black text-[#03300D] font-display mt-1.5 line-clamp-2 leading-snug group-hover:text-emerald-800 transition-colors">
+                    {prod.name}
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1.5 line-clamp-2 leading-relaxed">
+                    {prod.description}
+                  </p>
                 </div>
 
-                <button
-                  onClick={() => addToCart(prod)}
-                  className="w-full sm:w-auto p-2 sm:p-2.5 rounded-xl btn-primary-mint text-[#03300D] hover:bg-[#a3d1be] transition-all flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-black shadow-sm"
-                  title="Ajouter au panier"
-                >
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span>Commander</span>
-                </button>
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[9px] text-slate-400 font-bold uppercase">Prix TTC</div>
+                    <div className="text-base sm:text-lg font-black text-[#03300D]">{formatFCFA(prod.price)}</div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(`Bonjour MAXI PLUS SARL, je souhaite commander la pièce : ${prod.name} (Réf : ${prod.ref}) au tarif de ${formatFCFA(prod.price)}.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition-all"
+                      title="Commander directement sur WhatsApp (+225 07 09 36 50 23)"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    </a>
+
+                    <button
+                      onClick={() => addToCart(prod)}
+                      className="px-3.5 py-2.5 rounded-xl btn-primary-mint text-[#03300D] font-black text-xs shadow-sm hover:shadow-md flex items-center gap-1.5 transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Ajouter</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -1061,9 +1311,8 @@ function App() {
       </section>
 
       {/* 6. SECTION CONTACT & DEVIS (ANCRE #contact) */}
-      <section id="contact" className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-100 transition-all ${
-        currentPage === 'contact' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
-      }`}>
+      <section id="contact" className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-100 transition-all ${currentPage === 'contact' ? 'ring-2 ring-[#81B39D] rounded-3xl p-6 bg-white shadow-xl my-6' : ''
+        }`}>
         {currentPage === 'contact' && (
           <div className="max-w-7xl mx-auto mb-6 flex items-center justify-between bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-2xl">
             <span className="text-xs font-black text-emerald-900 uppercase tracking-wider">Page dédiée : Contact & Demande de Devis</span>
@@ -1071,11 +1320,11 @@ function App() {
           </div>
         )}
         <div className="max-w-7xl mx-auto rounded-[40px] bg-gradient-to-br from-[#011406] via-[#03300D] to-[#011406] text-white p-8 sm:p-14 lg:p-16 relative overflow-hidden shadow-2xl border border-[#81B39D]/20">
-          
+
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#81B39D]/15 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-            
+
             <div className="lg:col-span-7 space-y-6">
               <span className="text-xs font-black uppercase tracking-widest text-[#81B39D] bg-white/10 px-4 py-1.5 rounded-full inline-block border border-white/10">
                 SERVICE CLIENT IMMÉDIAT • CÔTE D'IVOIRE
@@ -1099,17 +1348,17 @@ function App() {
               </div>
 
               <div className="pt-4 flex flex-wrap gap-4">
-                <a 
-                  href={`https://wa.me/2250745881234?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je vous envoie la photo d\'une pièce d\'engin pour un devis urgent.')}`}
+                <a
+                  href={`https://wa.me/2250709365023?text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je vous envoie la photo d\'une pièce d\'engin pour un devis urgent.')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-4 rounded-2xl btn-primary-mint text-sm font-black inline-flex items-center gap-3 shadow-2xl"
                 >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                  <span>Discuter sur WhatsApp (+225 07 45 88 12 34)</span>
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                  <span>Discuter sur WhatsApp (+225 07 09 36 50 23)</span>
                 </a>
-                <a 
-                  href="admin/index.php" 
+                <a
+                  href="admin.html"
                   className="px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-sm font-black border border-white/20 backdrop-blur-md transition-all inline-flex items-center gap-2"
                 >
                   <svg className="w-4 h-4 text-[#81B39D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1122,9 +1371,9 @@ function App() {
 
             <div className="lg:col-span-5 flex items-center justify-center">
               <div className="w-full max-w-sm animate-float-slow">
-                <img 
-                  src={siteData.mobileAppImage} 
-                  alt="App Mobile MAXI PLUS" 
+                <img
+                  src={siteData.mobileAppImage}
+                  alt="App Mobile MAXI PLUS"
                   className="w-full h-auto drop-shadow-2xl"
                 />
               </div>
@@ -1167,7 +1416,7 @@ function App() {
       {/* 8. FOOTER OFFICIEL */}
       <footer className="bg-white border-t border-slate-200 pt-16 pb-12 px-4 sm:px-6 lg:px-8 mt-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-100">
-          
+
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl overflow-hidden bg-white p-1 border border-slate-200">
@@ -1191,7 +1440,7 @@ function App() {
               <li><a href="#services" className="hover:text-[#03300D]">Nos Services</a></li>
               <li><a href="#engins-location" className="hover:text-[#03300D]">Engins & Tracteurs</a></li>
               <li><a href="#catalogue-pieces" className="hover:text-[#03300D]">Catalogue Pièces</a></li>
-              <li><a href="admin/index.php" className="text-[#81B39D] font-bold hover:underline">Espace Administrateur</a></li>
+              <li><a href="admin.html" className="text-[#81B39D] font-bold hover:underline">Espace Administrateur</a></li>
             </ul>
           </div>
 
@@ -1216,7 +1465,7 @@ function App() {
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-[#81B39D] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                <span>+225 07 45 88 12 34 / 05 12 33 44 55</span>
+                <span>+225 07 09 36 50 23 / 05 12 33 44 55</span>
               </div>
             </div>
           </div>
@@ -1225,7 +1474,7 @@ function App() {
 
         <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
           <div>© {new Date().getFullYear()} MAXI PLUS SARL. Tarifs en Francs CFA (FCFA / XOF).</div>
-          <a href="admin/index.php" className="text-slate-500 hover:text-[#03300D] font-bold">Connexion Admin</a>
+          <a href="admin.html" className="text-slate-500 hover:text-[#03300D] font-bold">Connexion Admin</a>
         </div>
       </footer>
 
@@ -1233,7 +1482,7 @@ function App() {
       {isCartOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/60 backdrop-blur-sm animate-fade-up">
           <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between">
-            
+
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#03300D] text-[#81B39D] flex items-center justify-center font-bold">
@@ -1245,7 +1494,7 @@ function App() {
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => setIsCartOpen(false)}
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200"
               >
@@ -1273,12 +1522,12 @@ function App() {
                         <div className="text-xs font-black text-[#03300D] mt-0.5">{formatFCFA(item.price)}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => updateCartQuantity(item.id, -1)}
                           className="w-7 h-7 rounded-lg bg-white border border-slate-300 flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100"
                         >-</button>
                         <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                        <button 
+                        <button
                           onClick={() => updateCartQuantity(item.id, 1)}
                           className="w-7 h-7 rounded-lg bg-white border border-slate-300 flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100"
                         >+</button>
@@ -1289,9 +1538,9 @@ function App() {
                   <form onSubmit={handleCheckout} className="pt-4 border-t border-slate-200 space-y-3">
                     <h4 className="text-xs font-black uppercase text-[#03300D]">Coordonnées pour la livraison</h4>
                     <div>
-                      <input 
-                        type="text" 
-                        required 
+                      <input
+                        type="text"
+                        required
                         placeholder="Nom ou Entreprise *"
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
@@ -1299,16 +1548,16 @@ function App() {
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <input 
-                        type="tel" 
-                        required 
+                      <input
+                        type="tel"
+                        required
                         placeholder="Téléphone / WhatsApp *"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#81B39D] outline-none"
                       />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Ville / Chantier (ex: Abidjan)"
                         value={customerCity}
                         onChange={(e) => setCustomerCity(e.target.value)}
@@ -1316,7 +1565,7 @@ function App() {
                       />
                     </div>
                     <div>
-                      <textarea 
+                      <textarea
                         rows="2"
                         placeholder="Précisions de livraison..."
                         value={orderNotes}
@@ -1325,8 +1574,8 @@ function App() {
                       ></textarea>
                     </div>
 
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={isSubmittingOrder}
                       className="w-full py-3.5 rounded-xl btn-primary-mint text-xs font-extrabold shadow-lg flex items-center justify-center gap-2"
                     >
@@ -1352,7 +1601,7 @@ function App() {
       {bookingMachine && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-up">
           <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-            
+
             <div className="p-6 bg-[#03300D] text-white flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#81B39D] bg-white/10 px-2.5 py-0.5 rounded">
@@ -1361,7 +1610,7 @@ function App() {
                 <h3 className="text-lg font-extrabold font-display mt-1">{bookingMachine.name}</h3>
                 <div className="text-xs text-slate-300">{bookingMachine.brand} • {bookingMachine.model}</div>
               </div>
-              <button 
+              <button
                 onClick={() => setBookingMachine(null)}
                 className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10"
               >
@@ -1370,7 +1619,7 @@ function App() {
             </div>
 
             <form onSubmit={handleMachineBooking} className="p-6 space-y-4 text-xs">
-              
+
               <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div>
                   <span className="text-slate-500 font-semibold">Tarif Jour :</span>
@@ -1385,9 +1634,9 @@ function App() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Durée :</label>
-                  <input 
-                    type="number" 
-                    min="1" 
+                  <input
+                    type="number"
+                    min="1"
                     required
                     value={rentalDuration}
                     onChange={(e) => setRentalDuration(e.target.value)}
@@ -1396,7 +1645,7 @@ function App() {
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Unité :</label>
-                  <select 
+                  <select
                     value={rentalDurationUnit}
                     onChange={(e) => setRentalDurationUnit(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 outline-none bg-white"
@@ -1408,25 +1657,25 @@ function App() {
               </div>
 
               <div className="space-y-3 pt-2">
-                <input 
-                  type="text" 
-                  required 
+                <input
+                  type="text"
+                  required
                   placeholder="Nom ou Entreprise *"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 outline-none"
                 />
                 <div className="grid grid-cols-2 gap-3">
-                  <input 
-                    type="tel" 
-                    required 
+                  <input
+                    type="tel"
+                    required
                     placeholder="Téléphone / WhatsApp *"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 outline-none"
                   />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Ville / Chantier *"
                     value={customerCity}
                     onChange={(e) => setCustomerCity(e.target.value)}
@@ -1467,35 +1716,136 @@ function App() {
         </div>
       )}
 
-      {/* MODAL SUCCÈS */}
+      {/* MODAL SUCCÈS COMMANDE & NOTIFICATION WHATSAPP DIRECTE */}
       {orderSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-up">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-up">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 text-center space-y-4 border border-slate-100">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
             </div>
-            
-            <h3 className="text-2xl font-black text-[#03300D] font-display">Demande Enregistrée !</h3>
-            
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1 text-xs">
-              <div className="text-slate-500 font-semibold">Référence de votre dossier :</div>
-              <div className="text-lg font-mono font-extrabold text-[#03300D]">{orderSuccess.ref}</div>
-              <div className="text-slate-700 font-bold mt-1">Montant : {formatFCFA(orderSuccess.total)}</div>
+
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                {orderSuccess.isRental ? 'RÉSERVATION LOCATION ENREGISTRÉE' : 'COMMANDE PIÈCES ENREGISTRÉE'}
+              </span>
+              <h3 className="text-2xl font-black text-[#03300D] font-display mt-2">Dossier Validé avec Succès !</h3>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Votre conseiller MAXI PLUS SARL vous contacte immédiatement sur le <strong>{orderSuccess.phone}</strong> pour coordonner la mise à disposition ou l'expédition.
-            </p>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="text-slate-500 font-semibold">Numéro de référence officiel :</div>
+              <div className="text-xl font-mono font-black text-[#03300D] tracking-wider">{orderSuccess.ref}</div>
+              <div className="text-slate-800 font-extrabold text-sm pt-1 border-t border-slate-200/70 mt-1">
+                Total : {formatFCFA(orderSuccess.total)}
+              </div>
+            </div>
 
-            <button 
+            <div className="p-3 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed text-left space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-emerald-800">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>Notification WhatsApp Commerciale :</span>
+              </div>
+              <p>
+                Un récapitulatif détaillé a été préparé pour le service commercial MAXI PLUS SARL au <strong>+225 07 09 36 50 23</strong>.
+              </p>
+            </div>
+
+            {orderSuccess.waUrl && (
+              <a
+                href={orderSuccess.waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-2 shadow-lg transition-all animate-pulse"
+              >
+                <svg className="w-5 h-5 fill-current flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                <span>Envoyer le message WhatsApp (+225 07 09 36 50 23)</span>
+              </a>
+            )}
+
+            <button
               onClick={() => setOrderSuccess(null)}
-              className="w-full py-3.5 rounded-xl btn-primary-mint text-xs font-extrabold shadow-md"
+              className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all"
             >
-              Compris, merci !
+              Fermer la fenêtre
             </button>
           </div>
         </div>
       )}
+
+      {/* BOUTON FLOTTANT WHATSAPP DIRECT (+225 07 09 36 50 23) */}
+      <aside aria-label="Assistance WhatsApp">
+        <a
+          href={`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations / un devis.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-2xl floating-whatsapp-btn group backdrop-blur-sm border border-emerald-400/40"
+          title="Discuter directement sur WhatsApp avec le service commercial (+225 07 09 36 50 23)"
+        >
+          <div className="relative">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border border-emerald-800"></span>
+          </div>
+          <span className="hidden sm:inline">WhatsApp Express (+225 07 09 36 50 23)</span>
+          <span className="sm:hidden font-extrabold text-[11px]">WhatsApp</span>
+        </a>
+      </aside>
+
+      {/* BARRE D'ACTION MOBILE FLOTTANTE (BOTTOM NAV) */}
+      <nav aria-label="Navigation mobile" className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#011406]/95 backdrop-blur-lg border-t border-[#81B39D]/30 py-2 px-3 flex items-center justify-around shadow-2xl">
+        <button
+          onClick={() => navigateTo('home')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold ${
+            currentPage === 'home' ? 'text-[#81B39D]' : 'text-slate-400'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          <span>Accueil</span>
+        </button>
+
+        <button
+          onClick={() => navigateTo('rental')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold ${
+            currentPage === 'rental' ? 'text-[#81B39D]' : 'text-slate-400'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+          <span>Location</span>
+        </button>
+
+        <button
+          onClick={() => navigateTo('products')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold ${
+            currentPage === 'products' ? 'text-[#81B39D]' : 'text-slate-400'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+          <span>Pièces</span>
+        </button>
+
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="relative flex flex-col items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-white"
+        >
+          <div className="relative">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-2 bg-emerald-500 text-[#011406] text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                {cart.reduce((s, i) => s + i.quantity, 0)}
+              </span>
+            )}
+          </div>
+          <span>Panier</span>
+        </button>
+
+        <a
+          href={`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent('Bonjour MAXI PLUS SARL, je souhaite demander des informations.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col items-center gap-1 text-[10px] font-black text-emerald-400"
+        >
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          <span>WhatsApp</span>
+        </a>
+      </nav>
 
     </div>
   );

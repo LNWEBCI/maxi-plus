@@ -90,23 +90,43 @@ Site web professionnel complet pour l'entreprise **MAXI PLUS SARL** (Abidjan, C�
 
 ---
 
-## 🛠️ Stack Technique
-- **Backend** : PHP 8.5+, REST API (`api/products.php`, `api/machines.php`, `api/orders.php`, `api/site_settings.php`, `api/auth.php`, `api/upload.php`).
-- **Base de Données** : SQLite 3 (`data/database.sqlite`) avec initialisation et amorçage automatique (aucun import manuel SQL nécessaire).
-- **Frontend** : HTML5, React 18, Tailwind CSS, Lucide Icons, Vanilla CSS responsive.
-- **Stockage de Médias** : `assets/images/` et `uploads/`.
+## 🛠️ Stack Technique & Architecture Hybride (HTML & Vercel Ready)
+- **Version Déployable Vercel (100% Statique HTML5)** :
+  - `index.html` : Page d'accueil publique complète.
+  - `admin.html` & `admin/index.html` : Espace d'administration complet.
+  - `assets/js/db.js` : Moteur de base de données client avec persistance `localStorage`, amorçage complet des données (pièces, engins, commandes réelles) et intercepteur universel d'API.
+  - `vercel.json` : Configuration de routage propre (clean URLs) et en-têtes de cache optimisés.
+- **Frontend** : HTML5, React 18, Tailwind CSS, Lucide Icons, CSS responsive ultra-moderne.
+- **Version PHP Locale (Optionnelle)** :
+  - `index.php`, `admin.php`, `api/*.php`, SQLite 3 (`data/database.sqlite`).
 
 ---
 
-## 🏃‍♂️ Comment Lancer le Projet ?
+## ⚡ Déploiement sur Vercel (Recommandé)
 
-### Option 1 (Le plus simple — Double-clic)
+Le projet est configuré pour être déployé en 1 clic sur **Vercel** :
+1. Créez un repository sur GitHub / GitLab et poussez-y les fichiers du projet :
+   ```bash
+   git add .
+   git commit -m "Déploiement MAXI PLUS SARL en HTML sur Vercel"
+   git push origin main
+   ```
+2. Rendez-vous sur votre compte **[vercel.com](https://vercel.com/)** > **Add New Project**.
+3. Importez votre repository GitHub.
+4. Laissez les réglages par défaut (Framework Preset : *Other*).
+5. Cliquez sur **Deploy** !
+6. Votre site est instantanément en ligne avec les URLs propres :
+   - Site public : `https://votre-projet.vercel.app/`
+   - Espace Admin : `https://votre-projet.vercel.app/admin` (Identifiants : `admin@maxiplus.ci` / `admin123`)
+
+---
+
+## 🏃‍♂️ Comment Lancer le Projet en Local ?
+
+### Option 1 (Version HTML directe — Recommandée)
+Double-cliquez simplement sur **`index.html`** ou ouvrez-le avec l'extension VS Code *Live Server*.
+Toutes les fonctionnalités (panier, réservations, ajout de pièces, dashboard admin, modification de statut) fonctionnent directement dans votre navigateur grâce à `assets/js/db.js` et au LocalStorage !
+
+### Option 2 (Serveur PHP local)
 Double-cliquez sur le fichier **`launch.bat`** situé à la racine du dossier :
-Il démarre automatiquement le serveur PHP et ouvre votre navigateur à l'adresse **http://127.0.0.1:8000/**.
-
-### Option 2 (Via Apache XAMPP)
-1. Ouvrez le **Panneau de Contrôle XAMPP** (`C:\xampp\xampp-control.exe`).
-2. Cliquez sur le bouton **Start** en face du module **Apache**.
-3. Ouvrez votre navigateur et accédez à :
-   - **Site public** : `http://localhost/Maxi%20Plus/`
-   - **Administration** : `http://localhost/Maxi%20Plus/admin/`
+Il démarre automatiquement le serveur local sur **http://127.0.0.1:8000/**.
